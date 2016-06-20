@@ -1,0 +1,13 @@
+{
+  "autoload": {
+    "psr-4": {
+      "": "src/"
+    }
+  },
+  "require":{
+    "php":">=5.6.0",
+
+    "symfony/console": "*"
+  },
+  "prefer-stable": true
+}

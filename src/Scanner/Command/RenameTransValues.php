@@ -5,7 +5,6 @@ namespace Scanner\Command;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 use Scanner\Service;
@@ -42,7 +41,7 @@ class RenameTransValues extends Command
                     continue;
                 }
 
-                $output->writeln($unit->getRealPath());
+                $output->writeln('<info>' . $unit->getRealPath() . '</info>');
             }
         }
     }

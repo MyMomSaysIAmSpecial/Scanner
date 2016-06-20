@@ -8,40 +8,42 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
+use Scanner\Service;
+
 class RenameTransValues extends Command
 {
     protected function configure()
     {
         $this
-            ->setName('demo:greet')
+            ->setName('rename_values')
             ->setDescription('Greet someone')
             ->addArgument(
-                'name',
-                InputArgument::OPTIONAL,
-                'Who do you want to greet?'
-            )
-            ->addOption(
-                'yell',
-                null,
-                InputOption::VALUE_NONE,
-                'If set, the task will yell in uppercase letters'
+                'root',
+                InputArgument::REQUIRED,
+                'Please set project root'
             )
         ;
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $name = $input->getArgument('name');
-        if ($name) {
-            $text = 'Hello '.$name;
-        } else {
-            $text = 'Hello';
-        }
+        /**
+         * @var $unit \SplFileInfo
+         */
 
-        if ($input->getOption('yell')) {
-            $text = strtoupper($text);
-        }
+        $root = $input->getArgument('root');
+        $scanner = new Service\RenameDirectoryIterator($root);
+        $filter = new Service\RenameIteratorFilter($scanner);
+        $iterator = new Service\RenameIterator($filter);
 
-        $output->writeln($text);
+        foreach ($iterator as $path => $unit) {
+            if (!$unit->isDir()) {
+                if ($unit->getExtension() != 'php') {
+                    continue;
+                }
+
+                $output->writeln($unit->getRealPath());
+            }
+        }
     }
 }

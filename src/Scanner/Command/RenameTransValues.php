@@ -30,7 +30,6 @@ class RenameTransValues extends Command
     {
         $io = new SymfonyStyle($input, $output);
 
-
         /**
          * @var $unit \SplFileInfo
          * @var $formatter FormatterHelper
@@ -62,7 +61,21 @@ class RenameTransValues extends Command
             exit;
         }
 
-        $io->note('Process started');
+//        $pairs = [];
+//        foreach($keys as $key) {
+//            $lithuanian = ['ą', 'č', 'ę', 'ė', 'į', 'š', 'ų', 'ū', 'ž', ' '];
+//            $english = ['a', 'c', 'e', 'e', 'i', 's', 'u', 'u', 'z', '_'];
+//
+//            $pair = str_replace($lithuanian, $english, $key);
+//            $pair = strtolower($pair);
+//
+//            $pairs[] = [
+//                $key,
+//                $pair
+//            ];
+//
+//            var_dump([$key, $pair]);
+//        }
 
         foreach ($iterator as $path => $unit) {
             if (!$unit->isDir()) {
@@ -72,11 +85,25 @@ class RenameTransValues extends Command
 
                 $output->writeln($unit->getRealPath());
                 if ($unit->isWritable()) {
-                    $file = $unit->openFile('a+');
-                    $content = $file->fread($file->getSize());
-                    if (strpos($content, '__(') !== false) {
-                        $output->writeln(strpos($content, '__('));
-                        break;
+                    $file = $unit->openFile('r+');
+
+                    # Can't read empty file
+                    if ($file->getSize()) {
+                        $content = $file->fread($file->getSize());
+
+                        # strpos is faster than regexp
+                        if (strpos($content, '__(') !== false) {
+//                        $content = preg_replace("#__\(['|\"]?(.*)['|\"]?\)#i", 'magic_shit', $content);
+                            preg_match_all("#__\(['|\"](.*)['|\"]\)#i", $content, $found);
+                            var_dump($found);
+//                        $file->fwrite($content);
+
+                            $continue = $io->choice('Continue?', [1 => 'Yes', 'No'], 'Yes');
+
+                            if ($continue == 'No') {
+                                break;
+                            }
+                        }
                     }
 //                    $file->fwrite("appended this sample text");
                 }

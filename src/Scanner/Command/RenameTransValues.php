@@ -41,6 +41,8 @@ class RenameTransValues extends Command
         $filter = new Service\RenameIteratorFilter($scanner);
         $iterator = new Service\RenameIterator($filter);
 
+        $formatter = $this->getHelperSet()->get('formatter');
+
         try {
             $translationsPath = $root . 'app/autoplius/translation/messages.en.php';
 
@@ -77,37 +79,53 @@ class RenameTransValues extends Command
 //            var_dump([$key, $pair]);
 //        }
 
-        foreach ($iterator as $path => $unit) {
-            if (!$unit->isDir()) {
-                if ($unit->getExtension() != 'php') {
-                    continue;
-                }
+        $io->progressStart(count($keys));
+        $lost = [];
+        foreach($keys as $key) {
+            $found = 0;
+            $io->progressAdvance(1);
+            $io->write(' Searching for ' . $formatter->truncate($key, 150));
+            foreach ($iterator as $path => $unit) {
+                if (!$unit->isDir()) {
+                    if ($unit->getExtension() != 'php') {
+                        continue;
+                    }
 
-                $output->writeln($unit->getRealPath());
-                if ($unit->isWritable()) {
-                    $file = $unit->openFile('r+');
+//                    $output->writeln($unit->getRealPath());
+                    if ($unit->isWritable()) {
+                        $file = $unit->openFile('r+');
 
-                    # Can't read empty file
-                    if ($file->getSize()) {
-                        $content = $file->fread($file->getSize());
+                        # Can't read empty file
+                        if ($file->getSize()) {
+                            $content = $file->fread($file->getSize());
 
-                        # strpos is faster than regexp
-                        if (strpos($content, '__(') !== false) {
-//                        $content = preg_replace("#__\(['|\"]?(.*)['|\"]?\)#i", 'magic_shit', $content);
-                            preg_match_all("#__\(['|\"](.*)['|\"]\)#i", $content, $found);
-                            var_dump($found);
-//                        $file->fwrite($content);
-
-                            $continue = $io->choice('Continue?', [1 => 'Yes', 'No'], 'Yes');
-
-                            if ($continue == 'No') {
-                                break;
+                            # strpos is faster than regexp
+                            if (strpos($content, $key) !== false) {
+                                $found = 1;
+                                continue;
+////                        $content = preg_replace("#__\(['|\"]?(.*)['|\"]?\)#i", 'magic_shit', $content);
+//                            preg_match_all("#__\(['|\"](.*)['|\"]\)#i", $content, $found);
+//                            var_dump($found);
+////                        $file->fwrite($content);
+//
+//                            $continue = $io->choice('Continue?', [1 => 'Yes', 'No'], 'Yes');
+//
+//                            if ($continue == 'No') {
+//                                break;
+//                            }
                             }
                         }
-                    }
 //                    $file->fwrite("appended this sample text");
+                    }
                 }
             }
+            if (!$found) {
+                $lost[] = $key;
+            }
         }
+        $io->progressFinish();
+        $io->warning('Translations not found in code: ' . count($lost));
+        (new \SplFileInfo(getcwd() . '/log.txt'))->openFile('w+')->fwrite(implode("\n", $lost));
+
     }
 }

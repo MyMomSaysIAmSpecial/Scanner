@@ -2,7 +2,7 @@
 
 namespace Scanner\Service;
 
-class RenameIterator extends \RecursiveIteratorIterator
+class Iterator extends \RecursiveIteratorIterator
 {
     public function __construct(\FilterIterator $filter)
     {

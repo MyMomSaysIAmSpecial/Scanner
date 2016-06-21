@@ -2,7 +2,7 @@
 
 namespace Scanner\Service;
 
-class RenameDirectoryIterator extends \RecursiveDirectoryIterator
+class DirectoryIterator extends \RecursiveDirectoryIterator
 {
     public function __construct($root)
     {

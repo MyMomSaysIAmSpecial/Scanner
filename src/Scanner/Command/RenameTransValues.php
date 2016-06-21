@@ -7,12 +7,20 @@ use Symfony\Component\Console\Helper\FormatterHelper;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-
-use Scanner\Service;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Component\DependencyInjection\ContainerInterface;
+
 
 class RenameTransValues extends Command
 {
+    private $container;
+
+    public function __construct(ContainerInterface $container)
+    {
+        $this->container = $container;
+        parent::__construct();
+    }
+
     protected function configure()
     {
         $this
@@ -22,24 +30,27 @@ class RenameTransValues extends Command
                 'root',
                 InputArgument::REQUIRED,
                 'Please set project root'
-            )
-        ;
+            );
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $io = new SymfonyStyle($input, $output);
 
+        $root = $input->getArgument('root');
+        $config = $this->container->get('config');
+        $config->set('root', $root);
+
+        $io->success($config->get('root'));
+
+        $iterator = $this->container->get('iterator');
+
+        return;
+
         /**
          * @var $unit \SplFileInfo
          * @var $formatter FormatterHelper
          */
-
-        $root = $input->getArgument('root');
-
-        $scanner = new Service\RenameDirectoryIterator($root);
-        $filter = new Service\RenameIteratorFilter($scanner);
-        $iterator = new Service\RenameIterator($filter);
 
         $formatter = $this->getHelperSet()->get('formatter');
 
@@ -57,8 +68,8 @@ class RenameTransValues extends Command
                 throw new \Exception;
             }
 
-            $io->success(['Translations file found. Loaded ' .count($keys) . ' keys']);
-        } catch(\Exception $e) {
+            $io->success(['Translations file found. Loaded ' . count($keys) . ' keys']);
+        } catch (\Exception $e) {
             $io->error(['Translation file not found or is empty.']);
             exit;
         }
@@ -81,7 +92,7 @@ class RenameTransValues extends Command
 
         $io->progressStart(count($keys));
         $lost = [];
-        foreach($keys as $key) {
+        foreach ($keys as $key) {
             $found = 0;
             $io->progressAdvance(1);
             $io->write(' Searching for ' . $formatter->truncate($key, 150));

@@ -2,7 +2,7 @@
 
 namespace Scanner\Service;
 
-class RenameIteratorFilter extends \RecursiveFilterIterator
+class IteratorFilter extends \RecursiveFilterIterator
 {
     private $filters = [
         '.idea',
@@ -13,6 +13,11 @@ class RenameIteratorFilter extends \RecursiveFilterIterator
         'documents',
         'vendor',
     ];
+
+    public function setFilters()
+    {
+
+    }
 
     public function accept()
     {

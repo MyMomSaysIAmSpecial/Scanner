@@ -37,10 +37,6 @@ $container->register('console', Symfony\Component\Console\Application::class)
     ->addMethodCall('add', [new Reference('rename_console_command')]);
 
 $container->register('rename_console_command', \Scanner\Command\RenameTransValues::class)
-    ->setArguments(
-        [
-            new Reference('service_container')
-        ]
-    );
+    ->addArgument(new Reference('service_container'));
 
 return $container;

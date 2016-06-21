@@ -73,11 +73,11 @@ class RenameTransValues extends Command
 
         $io->progressStart(count($keys));
 
-        $lost = [];
+        $lost = $continue = [];
         foreach ($keys as $key) {
             $found = 0;
             $io->progressAdvance(1);
-            $io->write(' Searching for ' . $formatter->truncate($key, 75));
+            $io->text('Searching for ' . $formatter->truncate($key, 75));
             foreach ($iterator as $path => $unit) {
                 if (!$unit->isDir()) {
                     if ($unit->getExtension() != 'php') {
@@ -91,20 +91,35 @@ class RenameTransValues extends Command
                         if ($file->getSize()) {
                             $content = $file->fread($file->getSize());
 
-                            # strpos is faster than regexp
-                            if (strpos($content, $key) !== false) {
+                            /**
+                             * Long translation keys are crashing regexp,
+                             * and short one must be checked with function tags
+                             *
+                             * Ex.: It's not enought for "eur" just to check is it exist in a content, because
+                             * it can be just a currency typehint without translation, or a constant (EUR), on the
+                             * other hand, long key is most likely a token
+                             */
+                            if (strlen($key) > 30) {
+                                $check = strpos($content, $key);
+                            } else {
+                                $key = preg_quote($key);
+                                $check = preg_match("#__\(['|\"]({$key})['|\"]\)#", $content);
+                            }
+
+                            if ($check) {
                                 $found = 1;
-                                continue;
-////                        $content = preg_replace("#__\(['|\"]?(.*)['|\"]?\)#i", 'magic_shit', $content);
-//                            preg_match_all("#__\(['|\"](.*)['|\"]\)#i", $content, $found);
-//                            var_dump($found);
-////                        $file->fwrite($content);
+
+                                $content = preg_replace("#__\(['|\"]({$key})['|\"]\)#", '__(\'magic_shit\')', $content);
+                                $file->ftruncate($file->getSize());
+                                $file->fwrite($content);
 //
-//                            $continue = $io->choice('Continue?', [1 => 'Yes', 'No'], 'Yes');
-//
-//                            if ($continue == 'No') {
-//                                break;
-//                            }
+                                $io->newLine();
+                                $io->note('Found ' . $key .  ' in ' . $unit->getRealPath());
+                                $continue = $io->choice('Continue?', [1 => 'Yes', 'No'], 'Yes');
+
+                                if ($continue == 'No') {
+                                    break;
+                                }
                             }
                         }
                     }

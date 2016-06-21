@@ -4,19 +4,11 @@ namespace Scanner\Service;
 
 class IteratorFilter extends \RecursiveFilterIterator
 {
-    private $filters = [
-        '.idea',
-        '.vendor',
-        'app',
-        'node_modules',
-        'coverage',
-        'documents',
-        'vendor',
-    ];
+    private $filters = [];
 
-    public function setFilters()
+    public function setFilters($filters)
     {
-
+        $this->filters = $filters;
     }
 
     public function accept()

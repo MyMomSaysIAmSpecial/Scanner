@@ -38,14 +38,9 @@ class RenameTransValues extends Command
         $io = new SymfonyStyle($input, $output);
 
         $root = $input->getArgument('root');
+
         $config = $this->container->get('config');
         $config->set('root', $root);
-
-        $io->success($config->get('root'));
-
-        $iterator = $this->container->get('iterator');
-
-        return;
 
         /**
          * @var $unit \SplFileInfo
@@ -74,35 +69,21 @@ class RenameTransValues extends Command
             exit;
         }
 
-//        $pairs = [];
-//        foreach($keys as $key) {
-//            $lithuanian = ['ą', 'č', 'ę', 'ė', 'į', 'š', 'ų', 'ū', 'ž', ' '];
-//            $english = ['a', 'c', 'e', 'e', 'i', 's', 'u', 'u', 'z', '_'];
-//
-//            $pair = str_replace($lithuanian, $english, $key);
-//            $pair = strtolower($pair);
-//
-//            $pairs[] = [
-//                $key,
-//                $pair
-//            ];
-//
-//            var_dump([$key, $pair]);
-//        }
+        $iterator = $this->container->get('iterator');
 
         $io->progressStart(count($keys));
+
         $lost = [];
         foreach ($keys as $key) {
             $found = 0;
             $io->progressAdvance(1);
-            $io->write(' Searching for ' . $formatter->truncate($key, 150));
+            $io->write(' Searching for ' . $formatter->truncate($key, 75));
             foreach ($iterator as $path => $unit) {
                 if (!$unit->isDir()) {
                     if ($unit->getExtension() != 'php') {
                         continue;
                     }
 
-//                    $output->writeln($unit->getRealPath());
                     if ($unit->isWritable()) {
                         $file = $unit->openFile('r+');
 
@@ -126,7 +107,6 @@ class RenameTransValues extends Command
 //                            }
                             }
                         }
-//                    $file->fwrite("appended this sample text");
                     }
                 }
             }

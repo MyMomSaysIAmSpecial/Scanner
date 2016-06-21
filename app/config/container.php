@@ -11,7 +11,21 @@ $container->register('iterator', \Scanner\Service\Iterator::class)
 
 $container->register('iterator_filter', \Scanner\Service\IteratorFilter::class)
     ->addArgument(new Reference('directory_iterator'))
-    ->addMethodCall('setFilters', []);
+    ->addMethodCall(
+        'setFilters',
+        [
+            [
+                '.idea',
+                '.vendor',
+                'app',
+                'node_modules',
+                'coverage',
+                'documents',
+                'vendor',
+                'src'
+            ]
+        ]
+    );
 
 $container->register('directory_iterator', \Scanner\Service\DirectoryIterator::class)
     ->setFactory('Scanner\Service\DirectoryIteratorFactory::getDirectoryIterator')

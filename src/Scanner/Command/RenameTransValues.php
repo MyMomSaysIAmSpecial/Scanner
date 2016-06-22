@@ -92,6 +92,10 @@ class RenameTransValues extends Command
                             $content = $file->fread($file->getSize());
 
                             /**
+                             * https://regex101.com/r/lK9bD9/2
+                             */
+
+                            /**
                              * Long translation keys are crashing regexp,
                              * and short one must be checked with function tags
                              *

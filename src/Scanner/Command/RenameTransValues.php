@@ -117,19 +117,21 @@ class RenameTransValues extends Command
                             if (strlen($key) > 30) {
                                 $check = strpos($content, $key);
                             } else {
-                                $key = preg_quote($key);
-                                $check = preg_match("#__\(['|\"]({$key})['|\"]\)#", $content);
+                                $keyQuoted = preg_quote($key);
+                                $check = preg_match("#__\(['|\"]({$keyQuoted})['|\"]\)#", $content);
                             }
 
                             if ($check) {
                                 $found[] = $key;
 
-                                $content = preg_replace("#__\(['|\"]({$key})['|\"]\)#", '__(\'magic_shit\')', $content);
-                                $file->ftruncate($file->getSize());
-                                $file->fwrite($content);
-//
+//                                $content = preg_replace("#__\(['|\"]({$key})['|\"]\)#", '__(\'magic_shit\')', $content);
+//                                $file->ftruncate($file->getSize());
+//                                $file->fwrite($content);
+////
                                 $io->newLine();
                                 $io->note('Found in ' . $unit->getRealPath());
+                                break;
+
 //                                $continue = $io->choice('Continue?', [1 => 'Yes', 'No'], 'Yes');
 //
 //                                if ($continue == 'No') {
@@ -144,6 +146,7 @@ class RenameTransValues extends Command
         $io->progressFinish();
         $io->success(['Translations found in code: ' . count($found), 'Status saved to var/found.php']);
 
+        $found = array_unique($found);
         $content = var_export($found, true);
         $content = '<?php return ' . $content . ';';
         $fileSystem->dumpFile('var/found.php', $content);

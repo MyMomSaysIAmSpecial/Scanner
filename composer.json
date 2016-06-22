@@ -9,7 +9,10 @@
 
     "symfony/config": "*",
     "symfony/console": "*",
-    "symfony/dependency-injection": "*"
+    "symfony/filesystem": "*",
+    "symfony/dependency-injection": "*",
+
+    "guzzlehttp/guzzle": "*"
   },
   "prefer-stable": true
 }

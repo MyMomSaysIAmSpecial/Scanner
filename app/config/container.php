@@ -6,6 +6,10 @@ use Symfony\Component\DependencyInjection\Reference;
 
 $container = new ContainerBuilder();
 
+$container->register('file', \Symfony\Component\Filesystem\Filesystem::class);
+
+$container->register('http', \GuzzleHttp\Client::class);
+
 $container->register('iterator', \Scanner\Service\Iterator::class)
     ->addArgument(new Reference('iterator_filter'));
 

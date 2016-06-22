@@ -9,6 +9,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\Filesystem\Filesystem;
 
 
 class RenameTransValues extends Command
@@ -45,14 +46,20 @@ class RenameTransValues extends Command
         /**
          * @var $unit \SplFileInfo
          * @var $formatter FormatterHelper
+         * @var $fileSystem Filesystem
+         * @var $httpClient \GuzzleHttp\Client
          */
+
+        $iterator = $this->container->get('iterator');
+        $fileSystem = $this->container->get('file');
+        $httpClient = $this->container->get('http');
 
         $formatter = $this->getHelperSet()->get('formatter');
 
         try {
             $translationsPath = $root . 'app/autoplius/translation/messages.en.php';
 
-            if (!file_exists($translationsPath)) {
+            if (!$fileSystem->exists($translationsPath)) {
                 throw new \Exception;
             }
 
@@ -69,13 +76,14 @@ class RenameTransValues extends Command
             exit;
         }
 
-        $iterator = $this->container->get('iterator');
+        if (!$fileSystem->exists('var')) {
+            $fileSystem->mkdir('var');
+        }
 
         $io->progressStart(count($keys));
 
-        $lost = $continue = [];
+        $found = $continue = [];
         foreach ($keys as $key) {
-            $found = 0;
             $io->progressAdvance(1);
             $io->text('Searching for ' . $formatter->truncate($key, 75));
             foreach ($iterator as $path => $unit) {
@@ -93,6 +101,9 @@ class RenameTransValues extends Command
 
                             /**
                              * https://regex101.com/r/lK9bD9/2
+                             *
+                             * trnsl.1.1.20160622T065926Z.281115d0abf8cd8e.
+                             * 3ee99583c430302f4376992f2166b3557ac6c04c
                              */
 
                             /**
@@ -111,31 +122,31 @@ class RenameTransValues extends Command
                             }
 
                             if ($check) {
-                                $found = 1;
+                                $found[] = $key;
 
                                 $content = preg_replace("#__\(['|\"]({$key})['|\"]\)#", '__(\'magic_shit\')', $content);
                                 $file->ftruncate($file->getSize());
                                 $file->fwrite($content);
 //
                                 $io->newLine();
-                                $io->note('Found ' . $key .  ' in ' . $unit->getRealPath());
-                                $continue = $io->choice('Continue?', [1 => 'Yes', 'No'], 'Yes');
-
-                                if ($continue == 'No') {
-                                    break;
-                                }
+                                $io->note('Found in ' . $unit->getRealPath());
+//                                $continue = $io->choice('Continue?', [1 => 'Yes', 'No'], 'Yes');
+//
+//                                if ($continue == 'No') {
+//                                    break;
+//                                }
                             }
                         }
                     }
                 }
             }
-            if (!$found) {
-                $lost[] = $key;
-            }
         }
         $io->progressFinish();
-        $io->warning('Translations not found in code: ' . count($lost));
-        (new \SplFileInfo(getcwd() . '/log.txt'))->openFile('w+')->fwrite(implode("\n", $lost));
+        $io->success(['Translations found in code: ' . count($found), 'Status saved to var/found.php']);
+
+        $content = var_export($found, true);
+        $content = '<?php return ' . $content . ';';
+        $fileSystem->dumpFile('var/found.php', $content);
 
     }
 }

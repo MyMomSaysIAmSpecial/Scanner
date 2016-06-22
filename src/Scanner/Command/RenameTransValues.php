@@ -2,6 +2,7 @@
 
 namespace Scanner\Command;
 
+use Symfony\Component\Config\FileLocator;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\FormatterHelper;
 use Symfony\Component\Console\Input\InputArgument;
@@ -54,10 +55,17 @@ class RenameTransValues extends Command
         $fileSystem = $this->container->get('file');
         $httpClient = $this->container->get('http');
 
+        $sql = $this->container->get('sql');
+
+        $sql::table('ann_additional')->where('fk_ann_all_id', '=', 8)->get();
+
+        return;
+
         $formatter = $this->getHelperSet()->get('formatter');
 
         try {
-            $translationsPath = $root . 'app/autoplius/translation/messages.en.php';
+            $project = $config->get('name');
+            $translationsPath = $root . 'app/' . $project . '/translation/messages.en.php';
 
             if (!$fileSystem->exists($translationsPath)) {
                 throw new \Exception;

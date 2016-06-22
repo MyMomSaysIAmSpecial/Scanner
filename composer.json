@@ -12,7 +12,9 @@
     "symfony/filesystem": "*",
     "symfony/dependency-injection": "*",
 
-    "guzzlehttp/guzzle": "*"
+    "guzzlehttp/guzzle": "*",
+    "illuminate/database": "*",
+    "illuminate/events": "*"
   },
   "prefer-stable": true
 }

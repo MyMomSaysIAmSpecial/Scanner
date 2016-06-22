@@ -6,6 +6,20 @@ use Symfony\Component\DependencyInjection\Reference;
 
 $container = new ContainerBuilder();
 
+$container->register('sql_container', \Illuminate\Container\Container::class)
+    ->setPublic(false);
+
+$container->register('sql_dispatcher', \Illuminate\Events\Dispatcher::class)
+    ->addArgument(new Reference('sql_container'))
+    ->setPublic(false);
+
+$container->register('sql', \Illuminate\Database\Capsule\Manager::class)
+    ->setFactory('Scanner\Service\SqlManagerFactory::getSqlManager')
+    ->addArgument(new Reference('config'))
+    ->addMethodCall('setEventDispatcher', [new Reference('sql_dispatcher')])
+    ->addMethodCall('setAsGlobal')
+    ->addMethodCall('bootEloquent');
+
 $container->register('file', \Symfony\Component\Filesystem\Filesystem::class);
 
 $container->register('http', \GuzzleHttp\Client::class);

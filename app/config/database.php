@@ -1,7 +1,7 @@
 <?php return [
     'database' => [
         'host' => '127.0.0.1',
-        'dbname' => 'autoplius',
+        'dbname' => 'scanner',
         'user' => 'root',
         'pass' => 'toor',
     ]

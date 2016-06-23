@@ -2,6 +2,7 @@
 
 namespace Scanner\Command;
 
+use Illuminate\Database\Capsule\Manager;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\FormatterHelper;
@@ -49,17 +50,19 @@ class RenameTransValues extends Command
          * @var $formatter FormatterHelper
          * @var $fileSystem Filesystem
          * @var $httpClient \GuzzleHttp\Client
+         * @var $sql Manager
          */
 
-        $iterator = $this->container->get('iterator');
+        /** https://laravel.com/docs/5.2/queries */
+        $sql = $this->container->get('sql');
         $fileSystem = $this->container->get('file');
         $httpClient = $this->container->get('http');
+        $iterator = $this->container->get('iterator');
 
-        $sql = $this->container->get('sql');
-
-        $sql::table('ann_additional')->where('fk_ann_all_id', '=', 8)->get();
-
-        return;
+//        $tokens = $sql::table('data_dropdowns_values')
+//            ->select('value', 'url_value_lt', 'url_value_en')
+//            ->orderBy('id', 'asc')
+//            ->get();
 
         $formatter = $this->getHelperSet()->get('formatter');
 
